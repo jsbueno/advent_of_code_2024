@@ -2,7 +2,7 @@
 
 Load the input into "aa" and then:
 """
-
+# aa = open("input.txt").read()
 import re
 
 mul = lambda x,y: x * y
