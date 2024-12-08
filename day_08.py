@@ -23,8 +23,8 @@ class Map:
     @property
     def rect(self):
         if not hasattr(self, "_rect"):
-            self.rect = Rect(self.width, self.height)
-        retur self._rect
+            self._rect = Rect(self.width, self.height)
+        return self._rect
 
     def __iter__(self):
         for y in range(self.height):
@@ -38,7 +38,7 @@ class Map:
                 antennas.setdefault(item, set()).add(pos)
 
 
-    def part1(self):
+    def enumerate_antenna_pairs(self):
         self.find_antennas()
         nodes = set()
         for frequency, antennas in self.antennas.items():
@@ -46,9 +46,14 @@ class Map:
                 for other_antenna in antennas:
                     if other_antenna is antenna:
                         continue
-                    node_pos = antenna + (antenna - other_antenna)
-                    if node_pos in self.rect:
-                        nodes.add(node_pos)
+                    yield antenna, other_antenna
+
+    def part1(self):
+        nodes = set()
+        for antenna, other_antenna in self.enumerate_antenna_pairs():
+            node_pos = antenna + (antenna - other_antenna)
+            if node_pos in self.rect:
+                nodes.add(node_pos)
         return len(nodes)
 
     def __repr__(self):
