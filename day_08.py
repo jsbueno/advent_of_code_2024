@@ -56,6 +56,25 @@ class Map:
                 nodes.add(node_pos)
         return len(nodes)
 
+    def part2(self):
+        nodes = set()
+        #seen_pairs = set()
+        for antenna, other_antenna in self.enumerate_antenna_pairs():
+            #pair = frozenset((antenna, other_antenna))
+            #if pair in seen_pairs:
+                #continue
+            #seen_pairs.add(pair)
+
+            # instead of skipping the same pair of antennas in reverse order
+            # and write the 5 LoC bellow twice, just run it for the reversed pair!
+            node_distance = antenna - other_antenna
+            pos = antenna
+            while pos in self.rect:
+                nodes.add(pos)
+                pos += node_distance
+
+        return len(nodes)
+
     def __repr__(self):
         return self.data
 
