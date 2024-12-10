@@ -1,7 +1,7 @@
 from terminedia import V2, Directions
 
 
-DEBUG = FALSE
+DEBUG = False
 
 class Map:
     def __init__(self, data):
@@ -21,9 +21,9 @@ class Map:
         return self.raw_data
     def find_heads(self):
         return [pos for pos, height in self if height == 0]
-    def walk(self, start_pos):
+    def walk(self, start_pos, part="part1"):
         branches = [start_pos,]
-        summits = set()
+        summits = set() if part == "part1" else []
         while branches:
             new_branches = []
             for pos in branches:
@@ -32,15 +32,20 @@ class Map:
                     if self[new_pos:=(pos + direction)] != current_height + 1:
                         continue
                     if current_height == 8:
-                        summits.add(new_pos)
+                        getattr(summits, "add" if isinstance(summits, set) else  "append")(new_pos)
                         if DEBUG:
                             print(new_pos)
                         continue
                     new_branches.append(new_pos)
             branches = new_branches
         return len(summits)
+
     def part1(self):
         return sum(self.walk(head) for head in self.find_heads())
 
+    def part2(self):
+        return sum(self.walk(head, "part2") for head in self.find_heads())
+
 
 # print(Map(aa)).part1())
+# print(Map(aa)).part2())
