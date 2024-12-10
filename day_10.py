@@ -20,10 +20,10 @@ class Map:
         return [pos for pos, height in self if height == 0]
     def walk(self, start_pos):
         results = []
-        branches = set([start_pos,])
+        branches = [start_pos,]
         summits = 0
         while branches:
-            new_branches = set()
+            new_branches = []
             if DEBUG:
                 print(branches)
             for pos in branches:
@@ -36,8 +36,8 @@ class Map:
                         if DEBUG:
                             print(new_pos)
                         continue
-                    new_branches.add(new_pos)
-                branches = new_branches
+                    new_branches.append(new_pos)
+            branches = new_branches
         return summits
     def part1(self):
         return sum(self.walk(head) for head in self.find_heads())
