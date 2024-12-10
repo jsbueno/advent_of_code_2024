@@ -1,17 +1,20 @@
 from dataclasses import dataclass
 
+from copy import copy
+
 @dataclass
 class FSNode:
     file_id: int|None
     file_length: int
     start_pos: int
     white_space: bool
+    moved: bool = False
 
     def checksum(self):
-        return sum(self.file_id * i for i in range(start_pos, start_pos + file_length))
+        return sum(self.file_id * i for i in range(self.start_pos, self.start_pos + self.file_length))
 
 
-DEBUG = False
+DEBUG = True
 
 class FileSystem:
     def __init__(self):
@@ -49,13 +52,15 @@ class FileSystem:
             self.reindex()
         # linear search - we could move this to binary search later
         index = 0
-        if pos:
-            return data[0]
+        if pos == 0:
+            return self.data[0]
 
         for item in self.data:
-            if index + item.file_length >= pos:
+            index += item.file_length
+            if index >= pos:
                 return item
-            item += item.file_length
+        raise IndexError()
+
     def __len__(self):
         if self.dirty:
             self.reindex()
@@ -104,7 +109,7 @@ class FileSystem:
             if data_size < empty_size:
                 # there is extra white space afeter moving all file in!
                 # split white space node:
-                node.file_size = data_size
+                node.file_length = data_size
                 node = FSNode(None, empty_size - data_size, -1, white_space=True)
                 fspointer += 1
                 self.data.insert(fspointer, node)
@@ -128,6 +133,31 @@ class FileSystem:
             if DEBUG:
                 print(self)
 
+
+    def compress2(self):
+        self.reindex()
+        for file in reversed(self.data[:]):
+            if file.white_space:
+                continue
+            if file.moved:
+                continue
+            file.moved = True
+            for index, white_space in enumerate(self.data):
+                if not white_space.white_space:
+                    continue
+                if white_space.start_pos >= file.start_pos:
+                    break
+                if white_space.file_length >= file.file_length:
+                    self.data.insert(index, copy(file))
+                    white_space.file_length -= file.file_length
+                    file.white_space = True
+                    self.dirty = True
+                    break
+
+            if DEBUG:
+                print(self)
+
+
     def checksum(self):
         self.reindex()
         checksum = 0
@@ -138,6 +168,15 @@ class FileSystem:
 
     def __repr__(self):
         return "".join(("." if item.white_space else str(item.file_id % 10)) * item.file_length for item in self.data)
+# part1
 m = FileSystem()
-m
-zz = [m.append_compact(int(char), index % 2) for index, char in enumerate(aa1)]
+m.load_compact(aa)
+m.compress()
+print(m.checksum())
+
+# part2:
+m = FileSystem()
+m.load_compact(aa)
+m.compress2()
+print(m.checksum())
+
