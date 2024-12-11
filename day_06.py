@@ -18,15 +18,6 @@ class Map:
         self.initial_pos = V2(x,y)
         self.reset()
 
-    def reset(self):
-        self.seen = dict()
-        self.pos = self.initial_pos
-        self.seen[self.pos] = {Directions.UP,}
-        self.direction = Directions.UP
-        self.loop_count = 0
-        self.recurse_count = 0
-        self.obstacles = set()
-
     def __repr__(self):
         return f"<Map {self.width} x {self.height}, {len(self.seen)} visited, guard at {self.pos}"
     def __getitem__(self, pos):
@@ -50,6 +41,15 @@ class WalkableMap(Map):
     def __init__(self, text_map, put_obstacles=False):
         super().__init__(text_map)
         self.put_obstacles = put_obstacles
+
+    def reset(self):
+        self.seen = dict()
+        self.pos = self.initial_pos
+        self.seen[self.pos] = {Directions.UP,}
+        self.direction = Directions.UP
+        self.loop_count = 0
+        self.recurse_count = 0
+        self.obstacles = set()
 
 
     def walkline(self):
@@ -102,3 +102,93 @@ class WalkableMap(Map):
         self.put_obstacles = True
         self.walk()
         return self.loop_count
+
+
+# retake on day 6   (part2 simply didn't fly witht the code above)
+class Map2(Map):
+    def reset(self):
+        pass
+
+    def walk(self):
+        steps = 1
+        pos = self.initial_pos
+        direction = Directions.UP
+        seen = set()
+        while True:
+            if (content:=self[pos + direction]) is None:
+                break
+            elif not content:
+                if pos not in seen:
+                    steps += 1
+                    seen.add(pos)
+                pos += direction
+            else:
+                direction = turn_right(direction)
+        return steps
+
+    def walk2(self, add_obstacles=True):
+        steps = 1
+        pos = self.initial_pos
+        direction = Directions.UP
+        seen = dict()
+        seen_obs = set()
+
+        def check_obstacles(obs_pos):
+            nonlocal seen_obs
+            if not steps % 100:
+                print(steps)
+            original = self.data[obs_pos[1]][obs_pos[0]]
+            try:
+                self[obs_pos] = "#"
+                self.walk2(add_obstacles = False)
+            except InLoop:
+                seen_obs.add(obs_pos)
+            finally:
+                self[obs_pos] = original
+
+        while True:
+            if (content:=self[pos + direction]) is None:
+                break
+            elif not content:
+                if pos not in seen:
+                    steps += 1
+                    seen.setdefault(pos, set()).add(direction)
+                elif direction in seen[pos]:
+                    raise InLoop()
+                if add_obstacles and self[obs_pos:=pos + direction + direction] is False:
+                    check_obstacles(obs_pos)
+                pos += direction
+            else:
+                direction = turn_right(direction)
+                obs_pos = pos + direction
+                if self[obs_pos] is False:
+                    check_obstacles(obs_pos)
+
+        return steps, len(seen_obs)
+
+    def __repr__(self):
+            return "\n".join("".join(line) for line in self.data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
