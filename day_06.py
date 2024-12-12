@@ -161,7 +161,7 @@ class Map2(Map):
             else:
                 direction = turn_right(direction)
                 obs_pos = pos + direction
-                if self[obs_pos] is False:
+                if add_obstacles and self[obs_pos] is False:
                     check_obstacles(obs_pos)
 
         return steps, len(seen_obs)

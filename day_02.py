@@ -2,7 +2,7 @@
 
 reports = [tuple(map(int, line.split())) for line in aa.split("\n")]
 
-def check_report(report, tolerance=0):
+def check_report(report):
     prev = None
     direction = None
     for item in report:
@@ -21,9 +21,18 @@ def check_report(report, tolerance=0):
     return True
 
 
+def check_report2(report):
+    if check_report(report):
+        return True
+    for i in range(len(report)):
+        r2 = list(report)
+        del r2[i]
+        if check_report(r2):
+            return True
+    return False
 
 #part1
 print(sum(check_report(report) for report in reports))
 
 #part2:
-#print(sum(check_report(report, tolerance=1) for report in reports))
+print(sum(check_report2(report) for report in reports))

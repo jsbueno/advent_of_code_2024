@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections import deque
 
 from copy import copy
 
@@ -134,6 +135,7 @@ class FileSystem:
                 print(self)
 
 
+
     def compress2(self):
         self.reindex()
         for file in reversed(self.data[:]):
@@ -156,7 +158,6 @@ class FileSystem:
 
             if DEBUG:
                 print(self)
-
 
     def checksum(self):
         self.reindex()
