@@ -36,6 +36,7 @@ class Map:
         return self.data
 
 class Continue3(Exception): pass
+class Continue4(Exception): pass
 
 class Map12(Map):
 
@@ -53,21 +54,30 @@ class Map12(Map):
             for i, peri_1 in enumerate(perimeters):
                 try:
                     for peri_2 in perimeters[i + 1:]:
-                        for pos_1, direction_1, side_1 in peri_1:
-                            for pos_2, direction_2, side_2 in peri_2:
-                                difference = pos_1 - pos_2
-                                if (side_2 == side_1 and (
-                                        (direction_1 == direction_2 == "horizontal" and difference in (Directions.RIGHT, Directions.LEFT)) or
-                                        (direction_1 == direction_2 == "vertical" and difference in (Directions.UP, Directions.DOWN))
-                                    )
-                                ):
-                                    if DEBUG:
-                                        print (f"merging {peri_1} into {peri_2}")
-                                    peri_2.update(peri_1)
-                                    groupped = True
-                                    to_remove.append(i)
-                                    raise Continue3
-                except Continue3:
+                        try:
+                            for pos_1, direction_1, side_1 in peri_1:
+                                for pos_2, direction_2, side_2 in peri_2:
+                                    difference = pos_1 - pos_2
+                                    if (
+                                        side_2 != side_1 or direction_1 != direction_2 or
+                                        direction_1 == "horizontal" and pos_1.y != pos_2.y or
+                                        direction_1 == "vertical" and pos_1.x != pos_2.x
+
+                                    ):
+                                        raise Continue3()
+                                    if (
+                                            (direction_1 == "horizontal" and difference in (Directions.RIGHT, Directions.LEFT)) or
+                                            (direction_1 == "vertical" and difference in (Directions.UP, Directions.DOWN))
+                                    ):
+                                        if DEBUG:
+                                            print (f"merging {peri_1} into {peri_2}")
+                                        peri_2.update(peri_1)
+                                        groupped = True
+                                        to_remove.append(i)
+                                        raise Continue4
+                        except Continue3:
+                            pass
+                except Continue4:
                     pass
             if DEBUG:
                 print(to_remove)
