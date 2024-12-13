@@ -39,10 +39,11 @@ class Continue3(Exception): pass
 
 class Map12(Map):
 
-    def coalesce_perimeters(self, perimeters: list[set[tuple[V2, str]]]) -> int:
+    def coalesce_perimeters(self, perimeters: list[set[tuple[V2, "axis", "side"]]]) -> int:
         if DEBUG:
             print(len(perimeters), end=" -> ")
 
+            #breakpoint()
         groupped = True
         while groupped:
             if DEBUG:
@@ -52,15 +53,20 @@ class Map12(Map):
             for i, peri_1 in enumerate(perimeters):
                 try:
                     for peri_2 in perimeters[i + 1:]:
-                        for item in peri_1:
-                            if (any(
-                                 abs(item[0].x - item_2[0].x) == 1 and item[1] == item_2[1] == "horizontal" or
-                                 abs(item[0].y - item_2[0].y) == 1 and item[1] == item_2[1] == "vertical"
-                                    ) for item_2 in peri_2):
-                                peri_2.update(peri_1)
-                                groupped = True
-                                to_remove.append(i)
-                                raise Continue3
+                        for pos_1, direction_1, side_1 in peri_1:
+                            for pos_2, direction_2, side_2 in peri_2:
+                                difference = pos_1 - pos_2
+                                if (side_2 == side_1 and (
+                                        (direction_1 == direction_2 == "horizontal" and difference in (Directions.RIGHT, Directions.LEFT)) or
+                                        (direction_1 == direction_2 == "vertical" and difference in (Directions.UP, Directions.DOWN))
+                                    )
+                                ):
+                                    if DEBUG:
+                                        print (f"merging {peri_1} into {peri_2}")
+                                    peri_2.update(peri_1)
+                                    groupped = True
+                                    to_remove.append(i)
+                                    raise Continue3
                 except Continue3:
                     pass
             if DEBUG:
@@ -79,7 +85,7 @@ class Map12(Map):
         region_tiles = {pos,}
         region_marker = self[pos]
         perimeter = 0
-        perimeters: list[set[tuple[v2, str]]] = []
+        perimeters: list[set[tuple[v2, str, str]]] = []
         while to_explore_tiles:
             new_tiles = set()
             for tile in to_explore_tiles:
@@ -94,7 +100,8 @@ class Map12(Map):
                         perimeters.append(
                             {(
                                 (tile + ((1, 0) if direction == (1, 0) else (0, 1) if direction == (0, 1) else (0, 0))),
-                                "horizontal" if direction  in ((0, 1), (0, -1)) else "vertical"
+                                "horizontal" if direction  in ((0, 1), (0, -1)) else "vertical",
+                                "inside" if direction in ((1, 0), (0, 1)) else "outside"
                             ),}
                         )
             to_explore_tiles = new_tiles
