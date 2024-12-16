@@ -1,5 +1,6 @@
 from terminedia import V2, Directions, Rect
 
+DEBUG = False
 
 class Map:
     """Shamelessly copied from day 4 "TwoGrid" and then from Day 8
