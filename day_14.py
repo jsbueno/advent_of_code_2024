@@ -51,6 +51,8 @@ class Bot:
 class Map:
     def __init__(self, width, height):
         self.size = V2(width, height)
+        self.step = 0
+
     def load_bots(self, data):
         lines = data.split("\n")
         self.bots = []
@@ -63,8 +65,32 @@ class Map:
             bins[robot.pos_at(step)] = 1
         return bins.result()
 
+    def sync(self):
+        self.snapshot = {}
+        for bot in self.bots:
+            p = bot.pos_at(self.step)
+            self.snapshot[p] = self.snapshot.get(p, 0) + 1
+
+
+    def __repr__(self):
+        self.sync()
+        lines = []
+        for y in range(0, self.size.y):
+            line = ""
+            for x in range(0, self.size.x):
+                line += "." if (b:=self.snapshot.get((x, y))) is None else str(min(b, 9))
+            lines.append(line)
+        return "\n".join(lines)
+
 
 mm = Map(101, 103)
 # mm.load_bots(aa)
 # print(mm.part1(100))
 
+# part2 -
+xia = []
+for step in range(0, 8000):
+    if len({bot.pos_at(step) for bot in mm.bots}) == len(mm.bots):
+        xis.append(step)
+
+print(xis)
