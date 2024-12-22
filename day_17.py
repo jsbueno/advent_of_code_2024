@@ -33,8 +33,8 @@ class Computer:
             setattr(self, register, value)
         self.pc = 0
         self.tick = 0
-        self.bytecode = [int(opcode) for opcode in program.split(": ")[1].split(",")]
-        self.output = []
+        self.bytecode = bytes(int(opcode) for opcode in program.split(": ")[1].split(","))
+        self.output = bytearray()
 
     def program(self, offset=0):
         return "\n".join(f"{self.inst_opcodes[self.bytecode[i]]} {self.bytecode[i + 1: i+2]}" for i in range(offset, len(self.bytecode), 2))
@@ -46,7 +46,6 @@ class Computer:
     def run(self):
         while self.pc < len(self.bytecode):
             self.exec_one()
-        print()
 
     def exec_one(self):
         instr = self.inst_opcodes[bc:=self.bytecode[self.pc]]
@@ -54,8 +53,22 @@ class Computer:
         if bc != 3: #  != "JNZ":
             self.pc += 2
         self.tick += 1
-        if DEBUG and not self.tick %50:
+        if DEBUG and not self.tick %500:
             print ("\n", self.tick)
+
+    def part2(self):
+        a_value = 0
+        while True:
+            self.reset()
+            self.A = a_value
+            self.run()
+            if a_value % 500 == 0:
+                print(a_value)
+            if self.output == self.bytecode:
+                print(a_value)
+                print (self.output)
+                break
+            a_value += 1
 
     @property
     def op(self):
@@ -83,7 +96,8 @@ class Computer:
     def out(self):
         val = self.op % 8
         self.output.append(val)
-        print(val, end=",")
+        if DEBUG:
+            print(val, end=",")
 
     def bdv(self):
         self.B = self.A // 2 ** self.op
